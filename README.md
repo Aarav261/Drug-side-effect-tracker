@@ -109,16 +109,4 @@ The app runs at `http://127.0.0.1:5000`
 - "Delete headache side effect from Aspirin"
 - "List all drugs"
 
-## Troubleshooting
 
-**401 Unauthorized from Arcade MCP**
-- Verify `ARCADE_API_KEY` and `ARCADE_USER_ID` are set correctly
-- Check gateway URL permissions
-
-**VIRTUAL_ENV warning**
-- Use `uv run --active main.py` if using a different venv
-- Or deactivate current venv: `deactivate && uv run main.py`
-
-## License
-
-MIT
