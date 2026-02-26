@@ -1,66 +1,424 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Drug Database</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: Arial, sans-serif; max-width: 900px; margin: 40px auto; padding: 20px; }
-        h1 { color: #333; }
-        .query-box { margin: 20px 0; display: flex; gap: 10px; }
-        .query-box input { flex: 1; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px; }
-        .query-box button { padding: 10px 20px; font-size: 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        .query-box button:hover { background: #0056b3; }
-        .drug-card { background: #f8f9fa; border-radius: 8px; padding: 15px; margin: 15px 0; }
-        .drug-card h3 { margin: 0 0 10px 0; color: #007bff; }
-        .side-effect { padding: 8px; margin: 5px 0; background: white; border-left: 3px solid #28a745; }
-        .no-effects { color: #666; font-style: italic; }
-        #loading { display: none; color: #666; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            color: white;
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: rgba(255,255,255,0.8);
+            font-size: 1.1rem;
+        }
+
+        .query-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            margin-bottom: 32px;
+        }
+
+        .query-box {
+            display: flex;
+            gap: 12px;
+        }
+
+        .query-box input {
+            flex: 1;
+            padding: 14px 18px;
+            font-size: 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            outline: none;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .query-box input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+        }
+
+        .query-box input::placeholder {
+            color: #a0aec0;
+        }
+
+        .query-box button {
+            padding: 14px 28px;
+            font-size: 16px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .query-box button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .query-box button:active {
+            transform: translateY(0);
+        }
+
+        .query-box button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #loading {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 16px;
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid #e2e8f0;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .section-title {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: white;
+            border-radius: 2px;
+        }
+
+        .drug-count {
+            background: rgba(255,255,255,0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .drug-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+        }
+
+        .drug-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+        }
+
+        .drug-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .drug-card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .drug-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+        }
+
+        .effect-count {
+            background: #f1f5f9;
+            color: #64748b;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .side-effects-grid {
+            display: grid;
+            gap: 10px;
+        }
+
+        .side-effect {
+            padding: 14px 16px;
+            background: #f8fafc;
+            border-radius: 10px;
+            border-left: 4px solid #10b981;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .side-effect:hover {
+            background: #f1f5f9;
+        }
+
+        .side-effect.severity-high {
+            border-left-color: #ef4444;
+            background: #fef2f2;
+        }
+
+        .side-effect.severity-medium {
+            border-left-color: #f59e0b;
+            background: #fffbeb;
+        }
+
+        .side-effect.severity-low {
+            border-left-color: #10b981;
+            background: #f0fdf4;
+        }
+
+        .side-effect-name {
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .side-effect-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .probability-badge {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .probability-high {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .probability-medium {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .probability-low {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .no-effects {
+            color: #94a3b8;
+            font-style: italic;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .empty-state {
+            background: white;
+            border-radius: 16px;
+            padding: 60px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .empty-state h3 {
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            color: #64748b;
+        }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 1.8rem; }
+            
+            .query-box {
+                flex-direction: column;
+            }
+            
+            .query-box button {
+                width: 100%;
+            }
+            
+            .side-effect {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .side-effect-meta {
+                flex-direction: column;
+                gap: 4px;
+            }
+        }
     </style>
 </head>
 <body>
-    <h1>Drug Database</h1>
-    
-    <div class="query-box">
-        <input type="text" id="query" placeholder="Ask the agent (e.g., 'Create a drug called Aspirin')">
-        <button onclick="sendQuery()">Send</button>
-    </div>
-    <div id="loading">Processing...</div>
+    <div class="container">
+        <header>
+            <h1>💊 Drug Database</h1>
+            <p class="subtitle">Track medications and their side effects</p>
+        </header>
 
-    <h2>Drugs & Side Effects</h2>
-    {% if drugs %}
-        {% for drug in drugs %}
-        <div class="drug-card">
-            <h3>{{ drug.drug_name }}</h3>
-            {% if drug.side_effect_reports %}
-                {% for report in drug.side_effect_reports %}
-                <div class="side-effect">
-                    <strong>{{ report.side_effect_name }}</strong> - 
-                    Probability: {{ (report.side_effect_probability * 100)|round(1) }}% | 
-                    Reported: {{ report.side_effect_date }}
-                </div>
-                {% endfor %}
-            {% else %}
-                <p class="no-effects">No side effects reported</p>
-            {% endif %}
+        <div class="query-card">
+            <div class="query-box">
+                <input type="text" id="query" placeholder="Ask the agent (e.g., 'Create a drug called Aspirin with side effect headache')">
+                <button onclick="sendQuery()" id="sendBtn">Send</button>
+            </div>
+            <div id="loading">
+                <div class="spinner"></div>
+                <span>Processing your request...</span>
+            </div>
         </div>
-        {% endfor %}
-    {% else %}
-        <p>No drugs in database yet.</p>
-    {% endif %}
+
+        <h2 class="section-title">
+            Drugs & Side Effects
+            {% if drugs %}
+            <span class="drug-count">{{ drugs|length }} drug{{ 's' if drugs|length != 1 else '' }}</span>
+            {% endif %}
+        </h2>
+
+        {% if drugs %}
+            {% for drug in drugs %}
+            <div class="drug-card">
+                <div class="drug-header">
+                    <h3>
+                        <span class="drug-icon">💊</span>
+                        {{ drug.drug_name }}
+                    </h3>
+                    <span class="effect-count">
+                        {{ drug.side_effect_reports|length }} side effect{{ 's' if drug.side_effect_reports|length != 1 else '' }}
+                    </span>
+                </div>
+                {% if drug.side_effect_reports %}
+                    <div class="side-effects-grid">
+                        {% for report in drug.side_effect_reports %}
+                        {% set prob = report.side_effect_probability * 100 %}
+                        <div class="side-effect {% if prob >= 50 %}severity-high{% elif prob >= 20 %}severity-medium{% else %}severity-low{% endif %}">
+                            <span class="side-effect-name">{{ report.side_effect_name }}</span>
+                            <div class="side-effect-meta">
+                                <span class="probability-badge {% if prob >= 50 %}probability-high{% elif prob >= 20 %}probability-medium{% else %}probability-low{% endif %}">
+                                    {{ prob|round(1) }}% probability
+                                </span>
+                                <span>📅 {{ report.side_effect_date }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="no-effects">No side effects reported for this drug</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">🔬</div>
+                <h3>No drugs in database yet</h3>
+                <p>Use the query box above to add drugs and their side effects</p>
+            </div>
+        {% endif %}
+    </div>
 
     <script>
         async function sendQuery() {
             const query = document.getElementById('query').value;
             if (!query) return;
+
+            const btn = document.getElementById('sendBtn');
+            const loading = document.getElementById('loading');
             
-            document.getElementById('loading').style.display = 'block';
-            
-            await fetch('/query', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query })
-            });
-            
-            window.location.reload();
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+            loading.style.display = 'flex';
+
+            try {
+                await fetch('/query', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query })
+                });
+                window.location.reload();
+            } catch (error) {
+                btn.disabled = false;
+                btn.textContent = 'Send';
+                loading.style.display = 'none';
+                alert('Error processing request');
+            }
         }
 
         document.getElementById('query').addEventListener('keypress', (e) => {
